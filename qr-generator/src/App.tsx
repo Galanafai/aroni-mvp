@@ -31,6 +31,29 @@ function App() {
     destination: formData.destination,
   });
 
+  const downloadQR = () => {
+    const svg = document.getElementById('qr-code');
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const img = new Image();
+    img.onload = function () {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.download = 'aroni-qr-code.png';
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
+
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+  };
+
   return (
     <div style={{ padding: '2rem' }}>
       <h1>QR Metadata Generator</h1>
@@ -46,10 +69,13 @@ function App() {
 
       {isComplete && (
         <div style={{ marginTop: '2rem', background: 'white', padding: '1rem', display: 'inline-block' }}>
-          <QRCode value={qrPayload} size={200} />
+          <QRCode id="qr-code" value={qrPayload} size={200} />
           <pre style={{ marginTop: '1rem', background: '#f4f4f4', padding: '1rem' }}>
             {qrPayload}
           </pre>
+          <button onClick={downloadQR} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>
+            Download QR as PNG
+          </button>
         </div>
       )}
     </div>

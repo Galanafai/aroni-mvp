@@ -51,6 +51,28 @@ function App() {
     timestamp
   };
 
+  const handleSubmit = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/metadata', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(qrPayload),
+      });
+  
+      if (!res.ok) {
+        throw new Error('Failed to submit');
+      }
+  
+      alert('✅ Metadata submitted to backend!');
+    } catch (err) {
+      console.error(err);
+      alert('❌ Failed to submit metadata.');
+    }
+  };
+  
+
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Aroni QR Metadata Generator</h1>
@@ -86,7 +108,13 @@ function App() {
           {JSON.stringify(qrPayload, null, 2)}
         </pre>
       </div>
+      <button onClick={handleSubmit}
+          style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: '#1f7', border: 'none', borderRadius: 4 }}
+        >
+          Submit Metadata to Backend
+        </button>
     </div>
+    
   );
 }
 

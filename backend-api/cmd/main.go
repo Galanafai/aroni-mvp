@@ -1,12 +1,23 @@
 package main
 
 import (
-	"github.com/galanafai/aroni-backend/internal/handlers"
+	"log"
+
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/galanafai/aroni-backend/internal/db"
+	"github.com/galanafai/aroni-backend/internal/handlers"
 )
 
 func main() {
+	_ = godotenv.Load()
+
+	if err := db.InitDB(); err != nil {
+		log.Fatalf("❌ Failed to connect to Supabase: %v", err)
+	}
+
 	e := echo.New()
 
 	e.Use(middleware.Logger())

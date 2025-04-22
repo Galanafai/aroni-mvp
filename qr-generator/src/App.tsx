@@ -76,9 +76,31 @@ function App() {
           <button onClick={downloadQR} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>
             Download QR as PNG
           </button>
-        </div>
-      )}
-    </div>
+          <button
+          onClick={() => {
+            fetch('http://localhost:8080/api/metadata', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: qrPayload,
+            })
+              .then((res) => {
+                if (!res.ok) throw new Error('Failed to submit');
+                alert('✅ Metadata submitted to backend!');
+              })
+              .catch((err) => {
+                console.error(err);
+                alert('❌ Failed to submit metadata.');
+              });
+          }}
+          style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}
+        >
+          Submit Metadata to Backend
+        </button>
+                </div>
+              )}
+            </div>
   );
 }
 

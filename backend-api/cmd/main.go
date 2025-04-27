@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -14,9 +13,7 @@ import (
 func main() {
 	_ = godotenv.Load()
 
-	if err := db.InitDB(); err != nil {
-		log.Fatalf("❌ Failed to connect to Supabase: %v", err)
-	}
+	db.InitSupabaseClient()
 
 	e := echo.New()
 
@@ -25,6 +22,8 @@ func main() {
 	e.Use(middleware.CORS())
 
 	e.POST("/api/metadata", handlers.HandleMetadata)
+	e.POST("/api/scan", handlers.HandleScan)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
+

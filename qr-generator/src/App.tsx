@@ -66,6 +66,7 @@ function App() {
       }
   
       alert('✅ Metadata submitted to backend!');
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert('❌ Failed to submit metadata.');

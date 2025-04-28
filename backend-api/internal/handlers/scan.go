@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/galanafai/aroni-backend/internal/db"
 	"github.com/galanafai/aroni-backend/internal/models"
@@ -14,6 +15,7 @@ var scanValidator = validator.New()
 
 func HandleScan(c echo.Context) error {
 	var payload models.ScanPayload
+	scanTime := time.Now().UTC()
 
 	if err := c.Bind(&payload); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid JSON"})
@@ -67,6 +69,7 @@ func HandleScan(c echo.Context) error {
 		"scanned_dimensions": payload.ScannedDimensions,
 		"result":             result,
 		"notes":              reasonsToString(reasons),
+		"scan_time":          scanTime.Format(time.RFC3339), // 🔥 new field
 	})
 	if err != nil {
 		c.Logger().Errorf("❌ Failed to log scan: %v", err)

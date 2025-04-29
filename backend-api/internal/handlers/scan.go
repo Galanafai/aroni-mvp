@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
@@ -61,7 +64,7 @@ func HandleScan(c echo.Context) error {
 	}
 
 	// ✅ Log the scan result
-	err = db.PostScanLog(map[string]interface{}{
+	scanLog := map[string]interface{}{
 		"tracking_id":        payload.TrackingID,
 		"location":           payload.Location,
 		"scanned_quantity":   payload.ScannedQuantity,
@@ -69,8 +72,15 @@ func HandleScan(c echo.Context) error {
 		"scanned_dimensions": payload.ScannedDimensions,
 		"result":             result,
 		"notes":              reasonsToString(reasons),
-		"scan_time":          scanTime.Format(time.RFC3339), // 🔥 new field
-	})
+		"scan_time":          scanTime.Format(time.RFC3339),
+	}
+
+	// 🔐 Compute scan hash
+	scanLog["scan_hash"] = computeScanHash(scanLog)
+
+	// ✅ Now log the scan
+	err = db.PostScanLog(scanLog)
+
 	if err != nil {
 		c.Logger().Errorf("❌ Failed to log scan: %v", err)
 	}
@@ -87,4 +97,10 @@ func reasonsToString(reasons []string) string {
 		return ""
 	}
 	return strings.Join(reasons, ", ")
+}
+
+func computeScanHash(payload map[string]interface{}) string {
+	jsonBytes, _ := json.Marshal(payload)
+	hash := sha256.Sum256(jsonBytes)
+	return hex.EncodeToString(hash[:])
 }

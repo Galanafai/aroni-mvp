@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,7 +22,9 @@ func main() {
 
 	e.POST("/api/metadata", handlers.HandleMetadata)
 	e.POST("/api/scan", handlers.HandleScan)
+	e.POST("/api/anchor-batch", handlers.AnchorBatch)
+
+	e.GET("/api/history/:tracking_id", handlers.GetScanHistory)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
-

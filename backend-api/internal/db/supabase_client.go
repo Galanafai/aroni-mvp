@@ -140,3 +140,104 @@ func FetchMetadataByTrackingID(trackingID string) (*MetadataRecord, error) {
 
 	return &records[0], nil
 }
+
+func FetchScanHistory(trackingID string) ([]map[string]interface{}, error) {
+	url := fmt.Sprintf("%s/scan_log?tracking_id=eq.%s&order=scan_time.desc", supabaseAPIURL, trackingID)
+
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("supabase error %d", resp.StatusCode)
+	}
+
+	var history []map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&history)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return history, nil
+}
+
+func FetchRecentScanHashesForBatch() ([]string, []string, error) {
+	url := fmt.Sprintf("%s/scan_log?select=scan_hash,tracking_id", supabaseAPIURL)
+
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	var raw []map[string]string
+	err = json.NewDecoder(resp.Body).Decode(&raw)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var hashes []string
+	var ids []string
+	for _, r := range raw {
+		if r["scan_hash"] != "" {
+			hashes = append(hashes, r["scan_hash"])
+			ids = append(ids, r["tracking_id"])
+		}
+	}
+	return hashes, ids, nil
+}
+func SaveBatchRoot(rootHash string, count int, trackingIDs []string, note string) error {
+	payload := map[string]interface{}{
+		"root_hash":             rootHash,
+		"scan_count":            count,
+		"included_tracking_ids": trackingIDs,
+		"note":                  note,
+	}
+
+	body, _ := json.Marshal(payload)
+	url := fmt.Sprintf("%s/scan_batch", supabaseAPIURL)
+
+	req, err := http.NewRequestWithContext(context.Background(), "POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "return=representation")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("supabase error %d", resp.StatusCode)
+	}
+	return nil
+}

@@ -3,12 +3,14 @@ package handlers
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/galanafai/aroni-backend/internal/db"
+	"github.com/galanafai/aroni-backend/internal/utils"
 	"github.com/labstack/echo/v4"
 )
 
@@ -40,6 +42,12 @@ func AnchorBatch(c echo.Context) error {
 	err = db.SaveBatchRoot(root, len(hashes), ids, note)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to save batch root"})
+	}
+	err = utils.AnchorRootHashOTS(root, fmt.Sprintf("anchored/%s", root))
+	if err != nil {
+		c.Logger().Errorf("❌ Failed to anchor root hash to Bitcoin: %v", err)
+	} else {
+		c.Logger().Infof("🔗 Root hash %s anchored to Bitcoin via OTS", root)
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{

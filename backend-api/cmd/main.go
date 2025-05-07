@@ -27,6 +27,7 @@ func main() {
 
 	e.GET("/api/history/:tracking_id", handlers.GetScanHistory)
 	e.GET("/api/proof/:scan_hash", handlers.GetProofForScan)
+	e.GET("/api/scans", handlers.GetAllScanLogs)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

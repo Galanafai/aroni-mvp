@@ -241,3 +241,34 @@ func SaveBatchRoot(rootHash string, count int, trackingIDs []string, note string
 	}
 	return nil
 }
+func FetchAllScans() ([]map[string]interface{}, error) {
+	url := fmt.Sprintf("%s/scan_log?order=scan_time.desc", supabaseAPIURL)
+
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch scans: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("supabase error %d: %s", resp.StatusCode, body)
+	}
+
+	var scans []map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&scans); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return scans, nil
+}

@@ -136,6 +136,41 @@ const Dashboard: React.FC = () => {
               <p><strong>Notes:</strong> {selected.notes || '—'}</p>
               <p><strong>Scan Time:</strong> {new Date(selected.scan_time).toLocaleString()}</p>
               <p><strong>Scan Hash:</strong> <code>{selected.scan_hash || '—'}</code></p>
+              {selected.scan_hash && (
+            <div className="space-y-2">
+              <p><strong>Scan Hash:</strong> <code>{selected.scan_hash}</code></p>
+              <button
+                onClick={async () => {
+                  try {
+                    const proofRes = await fetch(`http://localhost:8080/api/proof/${selected.scan_hash}`);
+                    const proofData = await proofRes.json();
+                    if (!proofRes.ok) throw new Error(proofData.error || 'Failed to get proof');
+
+                    const verifyRes = await fetch(`http://localhost:8080/api/verify-scan`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        scan_hash: selected.scan_hash,
+                        root_hash: proofData.root_hash,
+                        proof: proofData.proof,
+                      }),
+                    });
+                    const verifyData = await verifyRes.json();
+                    if (verifyRes.ok && verifyData.valid) {
+                      alert('✅ Scan proof verified!');
+                    } else {
+                      alert('❌ Scan proof is INVALID.');
+                    }
+                  } catch (err: any) {
+                    alert('❌ Proof verification failed: ' + err.message);
+                  }
+                }}
+                className="mt-2 bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700"
+              >
+                Verify Proof
+              </button>
+            </div>
+          )}
             </div>
           </div>
         </div>

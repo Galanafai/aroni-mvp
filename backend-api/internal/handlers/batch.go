@@ -43,6 +43,7 @@ func AnchorBatch(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to save batch root"})
 	}
+
 	err = utils.AnchorRootHashOTS(root, fmt.Sprintf("anchored/%s", root))
 	if err != nil {
 		c.Logger().Errorf("❌ Failed to anchor root hash to Bitcoin: %v", err)
@@ -50,9 +51,10 @@ func AnchorBatch(c echo.Context) error {
 		c.Logger().Infof("🔗 Root hash %s anchored to Bitcoin via OTS", root)
 	}
 
+	// ✅ Final successful response
 	return c.JSON(http.StatusOK, echo.Map{
-		"root_hash":    root,
-		"scan_count":   len(hashes),
+		"root":         root,
+		"count":        len(hashes),
 		"tracking_ids": ids,
 		"note":         note,
 	})

@@ -25,9 +25,10 @@ func main() {
 	e.POST("/api/anchor-batch", handlers.AnchorBatch)
 	e.POST("/api/verify-scan", handlers.VerifyScan)
 
-	e.GET("/api/history/:tracking_id", handlers.GetScanHistory)
+	e.GET("/api/scan-history/:tracking_id", handlers.GetScanHistory)
 	e.GET("/api/proof/:scan_hash", handlers.GetProofForScan)
 	e.GET("/api/scans", handlers.GetAllScanLogs)
+	e.GET("/api/anchor-log", handlers.GetLatestAnchor)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

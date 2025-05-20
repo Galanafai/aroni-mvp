@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import TrustOverview from '../components/TrustOverview';
 
 type ScanLog = {
   id: string;
@@ -45,8 +46,8 @@ const Dashboard: React.FC = () => {
   }, [filter, scans]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">📦 Aroni Scan Log Dashboard</h1>
         <select
           value={filter}
@@ -58,6 +59,14 @@ const Dashboard: React.FC = () => {
           <option value="mismatch">Mismatches</option>
         </select>
       </div>
+
+      <TrustOverview
+        total={scans.length}
+        matches={scans.filter(s => s.result === 'match').length}
+        mismatches={scans.filter(s => s.result === 'mismatch').length}
+        anchored={scans.filter(s => s.scan_hash).length}
+        lastAnchorTime={'2025-08-12 12:41 UTC'} // TODO: Fetch from /api/anchor-log
+      />
 
       {loading ? (
         <p>Loading scan logs...</p>
@@ -136,41 +145,41 @@ const Dashboard: React.FC = () => {
               <p><strong>Notes:</strong> {selected.notes || '—'}</p>
               <p><strong>Scan Time:</strong> {new Date(selected.scan_time).toLocaleString()}</p>
               <p><strong>Scan Hash:</strong> <code>{selected.scan_hash || '—'}</code></p>
-              {selected.scan_hash && (
-            <div className="space-y-2">
-              <p><strong>Scan Hash:</strong> <code>{selected.scan_hash}</code></p>
-              <button
-                onClick={async () => {
-                  try {
-                    const proofRes = await fetch(`http://localhost:8080/api/proof/${selected.scan_hash}`);
-                    const proofData = await proofRes.json();
-                    if (!proofRes.ok) throw new Error(proofData.error || 'Failed to get proof');
 
-                    const verifyRes = await fetch(`http://localhost:8080/api/verify-scan`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        scan_hash: selected.scan_hash,
-                        root_hash: proofData.root_hash,
-                        proof: proofData.proof,
-                      }),
-                    });
-                    const verifyData = await verifyRes.json();
-                    if (verifyRes.ok && verifyData.valid) {
-                      alert('✅ Scan proof verified!');
-                    } else {
-                      alert('❌ Scan proof is INVALID.');
-                    }
-                  } catch (err: any) {
-                    alert('❌ Proof verification failed: ' + err.message);
-                  }
-                }}
-                className="mt-2 bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700"
-              >
-                Verify Proof
-              </button>
-            </div>
-          )}
+              {selected.scan_hash && (
+                <div className="space-y-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const proofRes = await fetch(`http://localhost:8080/api/proof/${selected.scan_hash}`);
+                        const proofData = await proofRes.json();
+                        if (!proofRes.ok) throw new Error(proofData.error || 'Failed to get proof');
+
+                        const verifyRes = await fetch(`http://localhost:8080/api/verify-scan`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            scan_hash: selected.scan_hash,
+                            root_hash: proofData.root_hash,
+                            proof: proofData.proof,
+                          }),
+                        });
+                        const verifyData = await verifyRes.json();
+                        if (verifyRes.ok && verifyData.valid) {
+                          alert('✅ Scan proof verified!');
+                        } else {
+                          alert('❌ Scan proof is INVALID.');
+                        }
+                      } catch (err: any) {
+                        alert('❌ Proof verification failed: ' + err.message);
+                      }
+                    }}
+                    className="mt-2 bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700"
+                  >
+                    Verify Proof
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

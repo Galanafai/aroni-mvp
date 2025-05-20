@@ -276,6 +276,4 @@ aroni-mvp/
 
 Aroni is built by [Galanafai Windross](https://github.com/yourusername), a mission-driven engineer building traceable infrastructure for the real world.
 
----
 
-Feel free to copy, fork, or contribute. This is only the beginning.

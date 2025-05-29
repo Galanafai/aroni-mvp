@@ -29,6 +29,7 @@ func main() {
 	e.GET("/api/proof/:scan_hash", handlers.GetProofForScan)
 	e.GET("/api/scans", handlers.GetAllScanLogs)
 	e.GET("/api/anchor-log", handlers.GetLatestAnchor)
+	e.GET("/api/proof/:scan_hash/download", handlers.DownloadProof)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

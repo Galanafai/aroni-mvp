@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/galanafai/aroni-backend/internal/debug"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -30,6 +31,6 @@ func main() {
 	e.GET("/api/scans", handlers.GetAllScanLogs)
 	e.GET("/api/anchor-log", handlers.GetLatestAnchor)
 	e.GET("/api/proof/:scan_hash/download", handlers.DownloadProof)
-
+	e.POST("/api/debug/generate-scans", debug.GenerateFakeScans)
 	e.Logger.Fatal(e.Start(":8080"))
 }

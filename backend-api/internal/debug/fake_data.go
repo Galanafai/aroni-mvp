@@ -2,6 +2,7 @@
 package debug
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/galanafai/aroni-backend/internal/db"
 	"github.com/galanafai/aroni-backend/internal/handlers"
 	"github.com/galanafai/aroni-backend/internal/models"
+	"github.com/galanafai/aroni-backend/internal/utils"
 )
 
 var locations = []string{"Dock A", "Warehouse", "Outbound", "Yard 7"}
@@ -57,21 +59,32 @@ func GenerateFakeScans(c echo.Context) error {
 			match := rand.Intn(4) != 0 // 75% chance match
 			result := "match"
 			notes := ""
+			quantity := meta.Quantity
+			weight := meta.WeightKg
+			dims := meta.DimensionsCm
+
 			if !match {
 				result = "mismatch"
 				notes = "simulated mismatch"
+				quantity += rand.Intn(5) + 1
+				weight += rand.Float64() * 3
+				dims[0] += rand.Float64() * 2
 			}
 
 			scan := models.ScanLog{
 				TrackingID:        trackingID.String(),
 				ScanTime:          time.Now().Add(-time.Duration(rand.Intn(5000)) * time.Second),
 				Location:          locations[rand.Intn(len(locations))],
-				ScannedQuantity:   rand.Intn(10) + 1,
-				ScannedWeightKg:   rand.Float64()*90 + 1,
-				ScannedDimensions: []int{rand.Intn(40) + 1, rand.Intn(40) + 1, rand.Intn(40) + 1},
+				ScannedQuantity:   quantity,
+				ScannedWeightKg:   weight,
+				ScannedDimensions: []int{int(dims[0]), int(dims[1]), int(dims[2])},
 				Result:            result,
 				Notes:             notes,
 			}
+
+			hash := utils.HashScan(scan)
+			scan.ScanHash = &hash
+
 			if err := db.PostScanLog(scan); err != nil {
 				c.Logger().Errorf("❌ Failed to insert scan: %v", err)
 				continue
@@ -87,6 +100,8 @@ func GenerateFakeScans(c echo.Context) error {
 					c.Logger().Warnf("⚠️ Anchor failed: %v", err)
 				}
 			}
+
+			fmt.Printf("🧪 Scan to insert: %+v\n", scan)
 		}
 	}
 

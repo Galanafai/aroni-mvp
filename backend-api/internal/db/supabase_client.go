@@ -14,11 +14,13 @@ var supabaseAPIURL string
 var supabaseKey string
 
 func InitSupabaseClient() {
-	supabaseAPIURL = os.Getenv("SUPABASE_API_URL")
-	supabaseKey = os.Getenv("SUPABASE_SERVICE_ROLE_KEY")
+	supabaseAPIURL = os.Getenv("SUPABASE_URL")
+	supabaseKey = os.Getenv("SUPABASE_KEY")
+
 	if supabaseAPIURL == "" || supabaseKey == "" {
-		panic("Missing Supabase API URL or Service Key in .env")
+		panic("Missing Supabase URL or Key in .env")
 	}
+
 }
 
 func PostMetadata(payload any) error {

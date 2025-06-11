@@ -44,6 +44,7 @@ func AnchorBatch(c echo.Context) error {
 	if err := db.SaveBatchRoot(root, len(hashes), trackingIDs, note); err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to save batch root"})
 	}
+	_ = db.InsertAnchorBatch(root, len(hashes), note)
 
 	// 🔗 Anchor to Bitcoin using OpenTimestamps
 	if err := utils.AnchorRootHashOTS(root, fmt.Sprintf("anchored/%s", root)); err != nil {

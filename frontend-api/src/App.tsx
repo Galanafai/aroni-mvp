@@ -5,6 +5,8 @@ import ScanSubmission from './pages/ScanSubmission';
 import Dashboard from './pages/Dashboard';
 
 import ScanHistoryLookup from './pages/ScanHistoryLookup';
+import AnchorHistory from './pages/AnchorHistory';
+
 // import ScanHistoryLookup from './pages/ScanHistoryLookup'; // coming soon
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
         <Route path="/submit-scan" element={<ScanSubmission />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/scan-history" element={<ScanHistoryLookup />} />
+        <Route path="/anchor-history" element={<AnchorHistory />} />
 
         {/* <Route path="/scan-history" element={<ScanHistoryLookup />} /> */}
       </Routes>

@@ -26,6 +26,11 @@ const Home: React.FC = () => {
             🔍 Lookup Scan History by Tracking ID
           </Link>
         </li>
+        <li>
+          <Link to="/anchor-history" className="text-blue-600 hover:underline">
+            🧾 View Anchor Batch History
+          </Link>
+        </li>
       </ul>
     </div>
   );

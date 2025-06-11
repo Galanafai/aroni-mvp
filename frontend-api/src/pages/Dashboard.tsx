@@ -76,10 +76,10 @@ const TwinTimeline: React.FC<{ scans: ScanLog[] }> = ({ scans }) => {
             </span>
           </div>
           <div className="text-xs text-gray-600">
-            Qty: {s.scanned_quantity}, Weight: {s.scanned_weight_kg} kg, Dim: {s.scanned_dimensions.join(' × ')} cm
+            Qty: {s.scanned_quantity}, Weight: {s.scanned_weight_kg} kg, Dim: {Array.isArray(s.scanned_dimensions) ? s.scanned_dimensions.join(' × ') : '—'} cm
           </div>
           <div className="text-xs mt-1">
-            {s.scan_hash ? '🔗 Anchored' : '— Not Anchored'}
+            {s.scan_hash ? '🔗 Anchored — ' : '— Not Anchored — '}<button className="text-blue-500 underline ml-1" onClick={() => window.open(`http://localhost:8080/api/proof/${s.scan_hash}`, '_blank')}>⬇️ Proof JSON</button><button className="text-green-500 underline ml-2" onClick={() => window.open(`http://localhost:8080/api/ots/${s.scan_hash}`, '_blank')}>⬇️ OTS File</button>
           </div>
         </li>
       ))}
@@ -90,7 +90,7 @@ const TwinTimeline: React.FC<{ scans: ScanLog[] }> = ({ scans }) => {
 const Dashboard: React.FC = () => {
   const [scans, setScans] = useState<ScanLog[]>([]);
   const [filter, setFilter] = useState<'all' | 'match' | 'mismatch'>('all');
-  const [selected, setSelected] = useState<ScanLog | null>(null);
+  const [selectedTrackingId, setSelectedTrackingId] = useState<string | null>(null);
   const [lastAnchorTime, setLastAnchorTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -174,8 +174,8 @@ const Dashboard: React.FC = () => {
                   <td className="p-2 text-xs text-gray-500">{new Date(twin.last_seen).toLocaleString()}</td>
                   <td className="p-2">
                     <button
-                      className="text-blue-600 hover:underline"
-                      onClick={() => setSelected(twin.scans[twin.scans.length - 1])}
+                      className="text-blue-600 underline"
+                      onClick={() => setSelectedTrackingId(twin.tracking_id)}
                     >
                       Inspect
                     </button>
@@ -187,15 +187,13 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {selected && (
-        <div className="fixed inset-0 bg-black/30 flex justify-end z-50">
-          <div className="bg-white w-[500px] p-6 shadow-lg overflow-auto max-h-full">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Digital Twin Timeline</h2>
-              <button onClick={() => setSelected(null)} className="text-lg">❌</button>
-            </div>
-            <TwinTimeline scans={scans.filter(s => s.tracking_id === selected.tracking_id)} />
+      {selectedTrackingId && (
+        <div className="mt-6 p-4 border rounded shadow-lg bg-white">
+          <div className="flex justify-between mb-3">
+            <h2 className="font-semibold">📦 Scan History for: {selectedTrackingId}</h2>
+            <button onClick={() => setSelectedTrackingId(null)} className="text-red-500">✖ Close</button>
           </div>
+          <TwinTimeline scans={scans.filter(s => s.tracking_id === selectedTrackingId)} />
         </div>
       )}
     </div>

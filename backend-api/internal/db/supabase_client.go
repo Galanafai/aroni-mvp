@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 var supabaseAPIURL string
@@ -273,4 +274,39 @@ func FetchAllScans() ([]map[string]interface{}, error) {
 	}
 
 	return scans, nil
+}
+func InsertAnchorBatch(root string, count int, note string) error {
+	payload := map[string]interface{}{
+		"merkle_root": root,
+		"scan_count":  count,
+		"anchored_at": time.Now().UTC().Format(time.RFC3339),
+		"notes":       note,
+	}
+
+	body, _ := json.Marshal(payload)
+	url := fmt.Sprintf("%s/anchor_batches", supabaseAPIURL)
+
+	req, err := http.NewRequestWithContext(context.Background(), "POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "return=representation")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("supabase error %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
 }

@@ -33,6 +33,7 @@ func main() {
 	e.GET("/api/proof/:scan_hash/download", handlers.DownloadProof)
 	e.POST("/api/debug/generate-scans", debug.GenerateFakeScans)
 	e.GET("/api/ots/:scan_hash", handlers.DownloadOTS)
+	e.GET("/api/anchor-batches", handlers.ListAnchorBatches)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

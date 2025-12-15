@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model PackageMetadata {
+  id            String   @id @default(uuid()) // tracking_id
+  sku           String
+  quantity      Int
+  weightKg      Float
+  dimensions    String   // JSON string: [L, W, H]
+  packageType   String
+  sourceId      String
+  destinationId String
+  carrierId     String?
+  urgencyLevel  String
+  hsCode        String
+  nestedWithin  String?
+  createdAt     DateTime @default(now())
+
+  scans         ScanLog[]
+}
+
+model ScanLog {
+  id                String   @id @default(uuid())
+  trackingId        String
+  scannedQuantity   Int
+  scannedWeightKg   Float
+  scannedDimensions String   // JSON string: [L, W, H]
+  location          String?
+  result            String   // "match" | "mismatch"
+  notes             String?
+  scanHash          String
+  scanTime          DateTime @default(now())
+
+  package           PackageMetadata @relation(fields: [trackingId], references: [id])
+}
